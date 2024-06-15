@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./login.scss";
-import { Link, json, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import apiRequest from "../../lib/apiRequest.js";
 
