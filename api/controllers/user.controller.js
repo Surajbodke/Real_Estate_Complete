@@ -10,6 +10,7 @@ export const getUsers = async (req, res) => {
     res.status(500).json({ message: "Failed to get users!" });
   }
 };
+
 export const getUser = async (req, res) => {
   const id = req.params.id;
   try {
@@ -22,6 +23,7 @@ export const getUser = async (req, res) => {
     res.status(500).json({ message: "Failed to get user!" });
   }
 };
+
 export const updateUser = async (req, res) => {
   const id = req.params.id;
   const tokenUserId = req.userId;
@@ -111,7 +113,7 @@ export const savePost = async (req, res) => {
 };
 
 export const profilePosts = async (req, res) => {
-  const tokenUserId = req.params.userId;
+  const tokenUserId = req.userId;
   try {
     const userPosts = await prisma.post.findMany({
       where: { userId: tokenUserId },
@@ -125,6 +127,28 @@ export const profilePosts = async (req, res) => {
 
     const savedPosts = saved.map((item) => item.post);
     res.status(200).json({ userPosts, savedPosts });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to get profile posts!" });
+  }
+};
+
+export const getNotificationNumber = async (req, res) => {
+  const tokenUserId = req.userId;
+  try {
+    const number = await prisma.chat.count({
+      where: {
+        userIDs: {
+          hasSome: [tokenUserId],
+        },
+        NOT: {
+          seenBy: {
+            hasSome: [tokenUserId],
+          },
+        },
+      },
+    });
+    res.status(200).json(number);
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Failed to get profile posts!" });
