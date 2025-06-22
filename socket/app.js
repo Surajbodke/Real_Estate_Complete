@@ -1,16 +1,26 @@
 import { Server } from "socket.io";
+import http from "http";
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const io = new Server({
+dotenv.config();
+
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
   },
 });
 
 let onlineUser = [];
 
 const addUser = (userId, socketId) => {
-  const userExits = onlineUser.find((user) => user.userId === userId);
-  if (!userExits) {
+  const userExists = onlineUser.find((user) => user.userId === userId);
+  if (!userExists) {
     onlineUser.push({ userId, socketId });
   }
 };
@@ -34,9 +44,7 @@ io.on("connection", (socket) => {
       io.to(receiver.socketId).emit("getMessage", data);
       console.log(`Message sent to ${receiverId}`);
     } else {
-      console.error(
-        `Receiver not found or receiver's socketId is undefined for receiverId: ${receiverId}`
-      );
+      console.error(`Receiver not found for receiverId: ${receiverId}`);
     }
   });
 
@@ -45,4 +53,8 @@ io.on("connection", (socket) => {
   });
 });
 
-io.listen("4000");
+// IMPORTANT → For Render: use PORT from environment
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+  console.log(`Socket.IO server running on port ${PORT}`);
+});
